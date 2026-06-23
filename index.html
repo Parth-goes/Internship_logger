@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A daily internship work log – offline-capable, GitHub Pages ready." />
+  <title>Internship Work Logger</title>
+
+  <!-- Material Icons (self-contained subset via Google Fonts CDN) -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+  <!-- Google Font: Inter for body, Lexend for display -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lexend:wght@600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-theme="light">
+
+<!-- ═══════════════════════════════════════════
+     TOP NAV BAR
+════════════════════════════════════════════ -->
+<header class="navbar" role="banner">
+  <div class="navbar__brand">
+    <span class="navbar__logo" aria-hidden="true">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="8" fill="#ffffff22"/>
+        <path d="M8 10h16M8 16h10M8 22h13" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="24" cy="22" r="4" fill="#FBBC04"/>
+        <path d="M22.5 22l1 1 2-2" stroke="#1967D2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span class="navbar__title">Internship Work Logger</span>
+  </div>
+
+  <div class="navbar__actions">
+    <!-- Search -->
+    <button class="icon-btn" id="btn-search-toggle" title="Search (Ctrl+F)" aria-label="Open search">
+      <span class="material-icons-round">search</span>
+    </button>
+    <!-- Dark Mode -->
+    <button class="icon-btn" id="btn-theme" title="Toggle dark mode" aria-label="Toggle dark mode">
+      <span class="material-icons-round" id="theme-icon">dark_mode</span>
+    </button>
+    <!-- Export -->
+    <div class="dropdown-wrap">
+      <button class="icon-btn" id="btn-export-menu" title="Export" aria-label="Export logs" aria-haspopup="true" aria-expanded="false">
+        <span class="material-icons-round">download</span>
+      </button>
+      <ul class="dropdown-menu" id="export-menu" role="menu" aria-label="Export options">
+        <li><button role="menuitem" data-export="json"><span class="material-icons-round">data_object</span>Export as JSON</button></li>
+        <li><button role="menuitem" data-export="markdown"><span class="material-icons-round">description</span>Export as Markdown</button></li>
+        <li><button role="menuitem" data-export="csv"><span class="material-icons-round">table_chart</span>Export as CSV</button></li>
+      </ul>
+    </div>
+    <!-- Import -->
+    <button class="icon-btn" id="btn-import" title="Import JSON backup" aria-label="Import JSON backup">
+      <span class="material-icons-round">upload</span>
+    </button>
+    <input type="file" id="import-file-input" accept=".json" hidden aria-hidden="true" />
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════
+     SEARCH BAR (collapsible)
+════════════════════════════════════════════ -->
+<div class="search-bar" id="search-bar" role="search" aria-hidden="true">
+  <div class="search-bar__inner">
+    <span class="material-icons-round search-bar__icon">search</span>
+    <input type="search" id="search-input" placeholder="Search by keyword, date, or tag…" autocomplete="off" aria-label="Search entries" />
+    <button class="icon-btn" id="btn-search-close" aria-label="Close search">
+      <span class="material-icons-round">close</span>
+    </button>
+  </div>
+  <!-- Filter chips -->
+  <div class="filter-chips" id="filter-chips" role="group" aria-label="Filter by tag"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════════ -->
+<main class="main-content" id="main-content" role="main">
+
+  <!-- Stats ribbon -->
+  <div class="stats-ribbon" id="stats-ribbon" aria-live="polite">
+    <div class="stat-pill">
+      <span class="material-icons-round">calendar_month</span>
+      <span id="stat-total">0 entries</span>
+    </div>
+    <div class="stat-pill">
+      <span class="material-icons-round">attach_file</span>
+      <span id="stat-files">0 files</span>
+    </div>
+    <div class="stat-pill">
+      <span class="material-icons-round">local_offer</span>
+      <span id="stat-tags">0 tags</span>
+    </div>
+  </div>
+
+  <!-- Card grid -->
+  <div class="card-grid" id="card-grid" role="list" aria-label="Work log entries"></div>
+
+  <!-- Empty state -->
+  <div class="empty-state" id="empty-state" hidden aria-live="polite">
+    <svg class="empty-state__illustration" viewBox="0 0 240 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="30" y="40" width="180" height="130" rx="12" fill="var(--surface-2)"/>
+      <rect x="50" y="65" width="100" height="10" rx="5" fill="var(--border)"/>
+      <rect x="50" y="85" width="140" height="8" rx="4" fill="var(--border)"/>
+      <rect x="50" y="103" width="120" height="8" rx="4" fill="var(--border)"/>
+      <rect x="50" y="121" width="80" height="8" rx="4" fill="var(--border)"/>
+      <circle cx="185" cy="55" r="28" fill="var(--accent-blue)"/>
+      <path d="M185 44v22M174 55h22" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <h2 class="empty-state__heading">No entries yet</h2>
+    <p class="empty-state__sub">Press <kbd>N</kbd> or click the <strong>+</strong> button to log your first work day.</p>
+    <button class="btn-primary" id="btn-empty-add">
+      <span class="material-icons-round">add</span> Add First Entry
+    </button>
+  </div>
+
+  <!-- No results state (search) -->
+  <div class="empty-state" id="no-results-state" hidden>
+    <span class="material-icons-round" style="font-size:64px;color:var(--text-secondary)">search_off</span>
+    <h2 class="empty-state__heading">No results found</h2>
+    <p class="empty-state__sub">Try different keywords or clear the search.</p>
+  </div>
+
+</main>
+
+<!-- ═══════════════════════════════════════════
+     FLOATING ACTION BUTTON
+════════════════════════════════════════════ -->
+<button class="fab" id="fab-add" title="New Entry (N)" aria-label="Add new entry">
+  <span class="material-icons-round fab__icon fab__icon--add">add</span>
+  <span class="material-icons-round fab__icon fab__icon--close" aria-hidden="true">close</span>
+</button>
+
+<!-- ═══════════════════════════════════════════
+     ADD / EDIT MODAL
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+  <div class="modal" id="modal">
+    <div class="modal__header">
+      <h2 class="modal__title" id="modal-title">New Entry</h2>
+      <button class="icon-btn" id="btn-modal-close" aria-label="Close modal">
+        <span class="material-icons-round">close</span>
+      </button>
+    </div>
+
+    <div class="modal__body">
+      <!-- Row: Date + Day -->
+      <div class="form-row">
+        <div class="form-field form-field--half">
+          <label class="form-label" for="entry-date">Date <span aria-hidden="true">*</span></label>
+          <input type="date" id="entry-date" class="form-input" required aria-required="true" />
+        </div>
+        <div class="form-field form-field--half">
+          <label class="form-label" for="entry-day">Day</label>
+          <input type="text" id="entry-day" class="form-input" readonly aria-readonly="true" placeholder="Auto-generated" />
+        </div>
+      </div>
+
+      <!-- Work Description (rich-ish toolbar) -->
+      <div class="form-field">
+        <label class="form-label" for="editor-content">Work Done <span aria-hidden="true">*</span></label>
+        <div class="editor-wrap">
+          <!-- Toolbar -->
+          <div class="editor-toolbar" role="toolbar" aria-label="Text formatting">
+            <button type="button" class="toolbar-btn" data-cmd="bold" title="Bold (Ctrl+B)" aria-label="Bold"><strong>B</strong></button>
+            <button type="button" class="toolbar-btn" data-cmd="italic" title="Italic (Ctrl+I)" aria-label="Italic"><em>I</em></button>
+            <button type="button" class="toolbar-btn" data-cmd="underline" title="Underline (Ctrl+U)" aria-label="Underline"><u>U</u></button>
+            <div class="toolbar-divider" aria-hidden="true"></div>
+            <button type="button" class="toolbar-btn" data-cmd="insertUnorderedList" title="Bullet list" aria-label="Bullet list">
+              <span class="material-icons-round" style="font-size:18px">format_list_bulleted</span>
+            </button>
+            <button type="button" class="toolbar-btn" data-cmd="insertOrderedList" title="Numbered list" aria-label="Numbered list">
+              <span class="material-icons-round" style="font-size:18px">format_list_numbered</span>
+            </button>
+            <div class="toolbar-divider" aria-hidden="true"></div>
+            <button type="button" class="toolbar-btn" data-cmd="formatBlock" data-val="h3" title="Heading" aria-label="Heading">H</button>
+            <button type="button" class="toolbar-btn" data-cmd="formatBlock" data-val="p" title="Paragraph" aria-label="Paragraph">¶</button>
+            <div class="toolbar-divider" aria-hidden="true"></div>
+            <button type="button" class="toolbar-btn" data-cmd="createLink" title="Insert link" aria-label="Insert link">
+              <span class="material-icons-round" style="font-size:18px">link</span>
+            </button>
+          </div>
+          <div
+            id="editor-content"
+            class="editor-area"
+            contenteditable="true"
+            role="textbox"
+            aria-multiline="true"
+            aria-label="Work description editor"
+            aria-required="true"
+            data-placeholder="Describe what you worked on today…"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div class="form-field">
+        <label class="form-label" for="entry-tags">Tags <span class="form-hint">(comma-separated)</span></label>
+        <input type="text" id="entry-tags" class="form-input" placeholder="e.g. react, api, meeting" autocomplete="off" />
+      </div>
+
+      <!-- File upload -->
+      <div class="form-field">
+        <label class="form-label">Attachments</label>
+        <div class="drop-zone" id="drop-zone" role="button" tabindex="0" aria-label="Upload files – click or drag and drop">
+          <span class="material-icons-round drop-zone__icon">cloud_upload</span>
+          <p class="drop-zone__text">Drag & drop files here, or <span class="drop-zone__link">browse</span></p>
+          <p class="drop-zone__hint">PDF, images, DOCX, TXT, code, ZIP · Max 50 MB each</p>
+          <input type="file" id="file-input" multiple hidden aria-hidden="true"
+            accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.svg,.doc,.docx,.txt,.md,.js,.ts,.py,.java,.html,.css,.json,.zip,.tar,.gz" />
+        </div>
+        <!-- File list -->
+        <ul class="file-list" id="file-list" aria-label="Attached files"></ul>
+      </div>
+
+      <!-- Draft indicator -->
+      <p class="draft-indicator" id="draft-indicator" aria-live="polite"></p>
+    </div>
+
+    <div class="modal__footer">
+      <button class="btn-ghost" id="btn-cancel">Cancel</button>
+      <button class="btn-primary" id="btn-save">
+        <span class="material-icons-round">save</span> Save Entry
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     DETAIL / EXPAND MODAL
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="detail-overlay" role="dialog" aria-modal="true" aria-labelledby="detail-title" hidden>
+  <div class="modal modal--wide" id="detail-modal">
+    <div class="modal__header">
+      <div>
+        <h2 class="modal__title" id="detail-title"></h2>
+        <span class="detail-day-badge" id="detail-day"></span>
+      </div>
+      <button class="icon-btn" id="btn-detail-close" aria-label="Close detail view">
+        <span class="material-icons-round">close</span>
+      </button>
+    </div>
+    <div class="modal__body">
+      <div id="detail-content" class="detail-content"></div>
+      <div id="detail-tags" class="tag-row" style="margin-top:12px"></div>
+      <div id="detail-files" class="detail-files"></div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn-ghost" id="btn-detail-edit">
+        <span class="material-icons-round">edit</span> Edit
+      </button>
+      <button class="btn-ghost btn-ghost--danger" id="btn-detail-delete">
+        <span class="material-icons-round">delete</span> Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     CONFIRM DIALOG
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="confirm-overlay" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-desc" hidden>
+  <div class="modal modal--sm">
+    <div class="modal__header">
+      <h2 class="modal__title" id="confirm-title">Delete Entry?</h2>
+    </div>
+    <div class="modal__body">
+      <p id="confirm-desc">This action cannot be undone. All attached files will also be removed.</p>
+    </div>
+    <div class="modal__footer">
+      <button class="btn-ghost" id="btn-confirm-cancel">Keep it</button>
+      <button class="btn-danger" id="btn-confirm-ok">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TOAST CONTAINER
+════════════════════════════════════════════ -->
+<div class="toast-container" id="toast-container" aria-live="assertive" aria-atomic="true"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
