@@ -1045,3 +1045,6 @@ input[type="date"] { color-scheme: light; }
   .card { break-inside: avoid; }
   body { background: #fff; color: #000; }
 }
+[hidden] {
+  display: none !important;
+}
